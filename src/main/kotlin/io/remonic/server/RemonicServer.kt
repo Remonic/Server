@@ -25,11 +25,11 @@ import java.lang.reflect.Modifier
 fun main(args: Array<String>) {
     loadConfigs()
     loadDatabase()
-    initServer()
+    initServer(8080)
 }
 
-fun initServer() {
-    val app = Javalin.start(8080)
+fun initServer(port: Int): Javalin {
+    val app = Javalin.start(port)
     val userController = UserController()
 
     val moshi = Moshi.Builder()
@@ -66,6 +66,8 @@ fun initServer() {
             post("register", userController::register)
         }
     }
+
+    return app
 }
 
 fun handleError(error: ErrorResponse, context: Context) {
