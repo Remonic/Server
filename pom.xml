@@ -160,31 +160,6 @@
                     </args>
                 </configuration>
             </plugin>
-
-            <!--
-            <plugin>
-                <groupId>org.jsonschema2pojo</groupId>
-                <artifactId>jsonschema2pojo-maven-plugin</artifactId>
-                <version>0.5.1</version>
-                <configuration>
-                    <sourceDirectory>${basedir}/schema</sourceDirectory>
-                    <excludes>
-                        <exclude>.gitignore</exclude>
-                    </excludes>
-                    <targetPackage>io.remonic.schema</targetPackage>
-                    <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
-                    <includeJsr303Annotations>true</includeJsr303Annotations>
-                    <annotationStyle>gson</annotationStyle>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            -->
         </plugins>
      </build>
 </project>
