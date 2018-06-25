@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Assertions.*
 class UserControllerTest {
     @Test fun testRegister() {
         test(HttpMethod.POST, "user/register") {
-            case("{}", ErrorResponse::class.java)
-            case("{'name': 'XXX'}", ErrorResponse::class.java)
+            case("{}", InvalidRequestError::class.java)
+            case("{'name': 'XXX'}", InvalidRequestError::class.java)
             case("{'name': 'XXX', 'email': 'xxx@gmail.com', 'password': 'xxx'}", PasswordTooShortError::class.java) {
                 assertEquals(it.errorCode, 2)
             }
