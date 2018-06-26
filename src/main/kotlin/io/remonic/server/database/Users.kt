@@ -1,6 +1,7 @@
 package io.remonic.server.database
 
 import org.jetbrains.exposed.dao.*
+import org.mindrot.jbcrypt.BCrypt
 import java.security.SecureRandom
 
 object Users: IntIdTable() {
@@ -13,6 +14,10 @@ class User(id: EntityID<Int>): IntEntity(id) {
     companion object : IntEntityClass<User>(Users) {
         fun findByEmail(email: String): User? {
             return User.find { Users.email eq email }.firstOrNull()
+        }
+
+        fun hashPassword(password: String): String {
+            return BCrypt.hashpw(password, BCrypt.gensalt(12))
         }
     }
 

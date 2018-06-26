@@ -19,12 +19,12 @@ class UserControllerTest {
                 assertEquals(it.errorCode, 2)
             }
 
-            case("{'name': 'XXX', 'email': 'xxx@remonic.io', 'password': $dummyPassword}", UserRegisterSuccess::class) {
+            case("{'name': 'XXX', 'email': 'xxx@remonic.io', 'password': '$dummyPassword'}", UserRegisterSuccess::class) {
                 assertEquals(it.success, true)
                 assertNotNull(it.sessionKey)
             }
 
-            case("{'name': 'XXX', 'email': 'xxx@remonic.io', 'password': $dummyPassword}", UserExistsError::class) {
+            case("{'name': 'XXX', 'email': 'xxx@remonic.io', 'password': '$dummyPassword'}", UserExistsError::class) {
                 assertEquals(it.errorCode, 1)
             }
         }
@@ -35,10 +35,10 @@ class UserControllerTest {
             User.new {
                 name = "Login Test"
                 email = "login_test@remonic.io"
-                password = dummyPassword
+                password = User.hashPassword(dummyPassword)
             }
         }
-        
+
         test(HttpMethod.POST, "user/login") {
             case("{}", InvalidRequestError::class)
             

@@ -1,15 +1,13 @@
 package io.remonic.server.routes
 
-import com.squareup.moshi.JsonDataException
-
 open class SuccessfulResponse(val success: Boolean = true)
 open class ErrorException(val error: ErrorResponse) : Exception()
-open class ErrorResponse(@Transient val httpCode: Int, val errorCode: Int, val errorMessage: String, val success: Boolean = false) {
+open class ErrorResponse(@Transient val httpCode: Int?, val errorCode: Int, val errorMessage: String, val success: Boolean = false) {
     fun ex(): ErrorException {
         return ErrorException(this)
     }
 }
-class InvalidRequestError(ex: JsonDataException): ErrorResponse(400, -1, ex.message!!)
+class InvalidRequestError(errorMessage: String): ErrorResponse(400, -1, errorMessage)
 
 fun deliver(error: ErrorResponse) {
     throw error.ex()

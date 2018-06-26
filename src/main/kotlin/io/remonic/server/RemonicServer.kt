@@ -2,6 +2,7 @@ package io.remonic.server
 
 import com.google.gson.GsonBuilder
 import com.squareup.moshi.JsonDataException
+import com.squareup.moshi.JsonEncodingException
 import io.javalin.ApiBuilder.path
 import io.javalin.ApiBuilder.post
 import io.javalin.Javalin
@@ -55,7 +56,11 @@ fun initServer(port: Int): Javalin {
     }
 
     app.exception(JsonDataException::class.java) { ex, context ->
-        handleError(InvalidRequestError(ex), context)
+        handleError(InvalidRequestError(ex.message ?: "JSON did not match request schema"), context)
+    }
+
+    app.exception(JsonEncodingException::class.java) { ex, context ->
+        handleError(InvalidRequestError("Invalid JSON"), context)
     }
 
     app.exception(ErrorException::class.java) { ex, context ->
@@ -73,7 +78,7 @@ fun initServer(port: Int): Javalin {
 }
 
 fun handleError(error: ErrorResponse, context: Context) {
-    context.status(error.httpCode)
+    context.status(error.httpCode ?: 400)
     context.json(error)
 }
 

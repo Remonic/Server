@@ -23,7 +23,7 @@ class UserController {
             val createdUser = User.new {
                 name = request.name
                 email = request.email
-                password = BCrypt.hashpw(request.password, BCrypt.gensalt(12))
+                password = User.hashPassword(request.password)
             }
 
             val session = Session.new {
@@ -40,7 +40,7 @@ class UserController {
         transaction {
             val currentUser = User.findByEmail(request.email) ?: throw NoUserError().ex()
 
-            if (BCrypt.checkpw(request.password, currentUser.password))
+            if (!BCrypt.checkpw(request.password, currentUser.password))
                 deliver(IncorrectPasswordError())
 
             val session = Session.new {

@@ -1,17 +1,16 @@
 package io.remonic.server
 
-import com.google.gson.GsonBuilder
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.client.util.StringContentProvider
 import org.eclipse.jetty.http.HttpMethod
-import java.lang.reflect.Modifier
 import kotlin.reflect.KClass
 
 val testClient = HttpClient()
-val gson = GsonBuilder()
-        .excludeFieldsWithModifiers(Modifier.TRANSIENT)
-        .disableHtmlEscaping()
-        .create()
+val moshi = Moshi.Builder()
+        .add(KotlinJsonAdapterFactory())
+        .build()
 var testPort = 0
 
 class TestInit {
@@ -25,19 +24,27 @@ class TestInit {
 }
 
 class Test(private val method: HttpMethod, private val path: String) {
+    init {
+        System.out.println("Testing $method /$path")
+    }
+
     inline fun <T : Any> case(body: String, response: KClass<T>, assertions: (T) -> Unit) {
         assertions(case(body, response))
     }
 
     fun <T : Any> case(body: String, response: KClass<T>): T {
+        System.out.println("Testing with $body to expect ${response.simpleName}")
+
         val res = testClient.newRequest("http://localhost:$testPort/$path")
                 .method(method)
                 .content(StringContentProvider(body.replace("'", "\"")))
                 .send()
         val content = res.contentAsString
 
+        System.out.println("Response: $content")
+
         try {
-            return gson.fromJson(content, response.java)
+            return moshi.adapter(response.java).fromJson(content)!!
         } catch (ex: Exception) {
             throw AssertionError("Response $content could not be parsed to ${response.simpleName}", ex)
         }
