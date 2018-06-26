@@ -65,6 +65,7 @@ fun initServer(port: Int): Javalin {
     app.routes {
         path("user") {
             post("register", userController::register)
+            post("login", userController::login)
         }
     }
 

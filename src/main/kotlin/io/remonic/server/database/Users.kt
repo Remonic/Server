@@ -10,7 +10,11 @@ object Users: IntIdTable() {
 }
 
 class User(id: EntityID<Int>): IntEntity(id) {
-    companion object : IntEntityClass<User>(Users)
+    companion object : IntEntityClass<User>(Users) {
+        fun findByEmail(email: String): User? {
+            return User.find { Users.email eq email }.firstOrNull()
+        }
+    }
 
     var email by Users.email
     var name by Users.name

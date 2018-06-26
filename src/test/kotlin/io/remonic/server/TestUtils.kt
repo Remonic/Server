@@ -5,6 +5,7 @@ import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.client.util.StringContentProvider
 import org.eclipse.jetty.http.HttpMethod
 import java.lang.reflect.Modifier
+import kotlin.reflect.KClass
 
 val testClient = HttpClient()
 val gson = GsonBuilder()
@@ -24,11 +25,11 @@ class TestInit {
 }
 
 class Test(private val method: HttpMethod, private val path: String) {
-    inline fun <T> case(body: String, response: Class<T>, assertions: (T) -> Unit) {
+    inline fun <T : Any> case(body: String, response: KClass<T>, assertions: (T) -> Unit) {
         assertions(case(body, response))
     }
 
-    fun <T> case(body: String, response: Class<T>): T {
+    fun <T : Any> case(body: String, response: KClass<T>): T {
         val res = testClient.newRequest("http://localhost:$testPort/$path")
                 .method(method)
                 .content(StringContentProvider(body.replace("'", "\"")))
@@ -36,7 +37,7 @@ class Test(private val method: HttpMethod, private val path: String) {
         val content = res.contentAsString
 
         try {
-            return gson.fromJson(content, response)
+            return gson.fromJson(content, response.java)
         } catch (ex: Exception) {
             throw AssertionError("Response $content could not be parsed to ${response.simpleName}", ex)
         }

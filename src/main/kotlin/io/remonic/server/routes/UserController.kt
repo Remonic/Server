@@ -12,7 +12,7 @@ class UserController {
         val request = context.bodyAsClass(UserRegisterRequest::class.java)
 
         transaction {
-            if (User.find { Users.email eq request.email}.count() >= 1) {
+            if (User.findByEmail(request.email) != null) {
                 deliver(UserExistsError())
             }
 
@@ -33,9 +33,31 @@ class UserController {
             context.json(UserRegisterSuccess(session.token.value))
         }
     }
+
+    fun login(context: Context) {
+        val request = context.bodyAsClass(UserLoginRequest::class.java)
+
+        transaction {
+            val currentUser = User.findByEmail(request.email) ?: throw NoUserError().ex()
+
+            if (BCrypt.checkpw(request.password, currentUser.password))
+                deliver(IncorrectPasswordError())
+
+            val session = Session.new {
+                user = currentUser
+            }
+
+            context.json(UserLoginSuccess(session.token.value))
+        }
+    }
 }
 
 data class UserRegisterRequest(val name: String, val email: String, val password: String)
 class UserRegisterSuccess(val sessionKey: String): SuccessfulResponse()
 class UserExistsError: ErrorResponse(400, 1, "A user by that email already exists")
 class PasswordTooShortError: ErrorResponse(400, 2, "Password provided is lower than 8 characters")
+
+data class UserLoginRequest(val email: String, val password: String)
+class UserLoginSuccess(val sessionKey: String): SuccessfulResponse()
+class NoUserError: ErrorResponse(400, 3, "No user by that email exists")
+class IncorrectPasswordError: ErrorResponse(400, 4, "Incorrect password")
