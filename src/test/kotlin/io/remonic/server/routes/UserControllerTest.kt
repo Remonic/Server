@@ -15,8 +15,9 @@ class UserControllerTest {
                 assertEquals(it.errorCode, 2)
             }
 
-            case("{'name': 'XXX', 'email': 'xxx@gmail.com', 'password': 'xxxxxxxxxxx'}", SuccessfulResponse::class.java) {
+            case("{'name': 'XXX', 'email': 'xxx@gmail.com', 'password': 'xxxxxxxxxxx'}", UserRegisterSuccess::class.java) {
                 assertEquals(it.success, true)
+                assertNotNull(it.sessionKey)
             }
 
             case("{'name': 'XXX', 'email': 'xxx@gmail.com', 'password': 'xxxxxxxxxxx'}", UserExistsError::class.java) {

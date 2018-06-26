@@ -1,9 +1,7 @@
 package io.remonic.server.database
 
-import org.jetbrains.exposed.dao.EntityID
-import org.jetbrains.exposed.dao.IntEntity
-import org.jetbrains.exposed.dao.IntEntityClass
-import org.jetbrains.exposed.dao.IntIdTable
+import org.jetbrains.exposed.dao.*
+import java.security.SecureRandom
 
 object Users: IntIdTable() {
     val email = varchar("email", 50).uniqueIndex()
@@ -17,4 +15,28 @@ class User(id: EntityID<Int>): IntEntity(id) {
     var email by Users.email
     var name by Users.name
     var password by Users.password
+
+    val sessions by Session referrersOn Sessions.user
+}
+
+object Sessions: IdTable<String>() {
+    override val id = varchar("token", 32).primaryKey().clientDefault {
+        val keyIndex = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+        val key = StringBuilder()
+        val random = SecureRandom()
+
+        for (i in 1..32) {
+            key.append(keyIndex[random.nextInt(keyIndex.length)])
+        }
+
+        key.toString()
+    }.entityId()
+    val user = reference("user", Users)
+}
+
+class Session(id: EntityID<String>): Entity<String>(id) {
+    companion object : EntityClass<String, Session>(Sessions)
+
+    var token by Sessions.id
+    var user by User referencedOn Sessions.user
 }

@@ -13,6 +13,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.javalin.Context
 import io.javalin.translator.json.JsonToObjectMapper
 import io.javalin.translator.json.ObjectToJsonMapper
+import io.remonic.server.database.Sessions
 import io.remonic.server.database.Users
 import io.remonic.server.routes.ErrorException
 import io.remonic.server.routes.ErrorResponse
@@ -82,6 +83,7 @@ fun loadDatabase() {
     // create our tables
     transaction {
         create(Users)
+        create(Sessions)
     }
 }
 
