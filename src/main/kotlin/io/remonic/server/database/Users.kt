@@ -1,6 +1,8 @@
 package io.remonic.server.database
 
 import org.jetbrains.exposed.dao.*
+import org.jetbrains.exposed.sql.SizedIterable
+import org.jetbrains.exposed.sql.and
 import org.mindrot.jbcrypt.BCrypt
 import java.security.SecureRandom
 
@@ -26,6 +28,13 @@ class User(id: EntityID<Int>): IntEntity(id) {
     var password by Users.password
 
     val sessions by Session referrersOn Sessions.user
+    val permissions by UserPermission referrersOn UserPermissions.user
+
+    fun hasPermission(permission: String): Boolean {
+        return permissions.any {
+            it.permission.equals(permission, true)
+        }
+    }
 }
 
 object Sessions: IdTable<String>() {
@@ -48,4 +57,26 @@ class Session(id: EntityID<String>): Entity<String>(id) {
 
     var token by Sessions.id
     var user by User referencedOn Sessions.user
+}
+
+object UserPermissions: IntIdTable() {
+    val user = reference("user", Users)
+    val permission = varchar("permission", 32)
+
+    init {
+        index(true, user, permission)
+    }
+}
+
+class UserPermission(id: EntityID<Int>): IntEntity(id) {
+    companion object : IntEntityClass<UserPermission>(UserPermissions) {
+        fun findByUser(user: User, permission: String): SizedIterable<UserPermission> {
+            return UserPermission.find {
+                (UserPermissions.user eq user.id) and (UserPermissions.permission eq permission)
+            }
+        }
+    }
+
+    var user by User referencedOn UserPermissions.user
+    var permission by UserPermissions.permission
 }

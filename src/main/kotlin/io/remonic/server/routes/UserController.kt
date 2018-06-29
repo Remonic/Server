@@ -3,9 +3,9 @@ package io.remonic.server.routes
 import io.javalin.Context
 import io.remonic.server.database.Session
 import io.remonic.server.database.User
-import io.remonic.server.database.Users
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.mindrot.jbcrypt.BCrypt
+import java.util.concurrent.TimeUnit
 
 class UserController {
     fun register(context: Context) {
@@ -47,6 +47,7 @@ class UserController {
                 user = currentUser
             }
 
+            context.cookie("user_session", session.token.value, TimeUnit.DAYS.toSeconds(90).toInt())
             context.json(UserLoginSuccess(session.token.value))
         }
     }

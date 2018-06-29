@@ -7,26 +7,29 @@ import io.javalin.ApiBuilder.path
 import io.javalin.ApiBuilder.post
 import io.javalin.Javalin
 import io.remonic.server.routes.UserController
-import org.jetbrains.exposed.sql.Database
 import io.javalin.translator.json.JavalinJsonPlugin
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.javalin.Context
 import io.javalin.translator.json.JsonToObjectMapper
 import io.javalin.translator.json.ObjectToJsonMapper
+import io.remonic.server.config.DatabaseConfig
 import io.remonic.server.database.Sessions
+import io.remonic.server.database.UserPermissions
 import io.remonic.server.database.Users
 import io.remonic.server.routes.ErrorException
 import io.remonic.server.routes.ErrorResponse
 import io.remonic.server.routes.InvalidRequestError
 import org.jetbrains.exposed.sql.SchemaUtils.create
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.io.File
+import java.io.FileReader
 import java.lang.reflect.Modifier
-
+import java.nio.file.Files
+import java.util.*
 
 fun main(args: Array<String>) {
-    loadConfigs()
-    loadDatabase()
+    loadDatabase(loadConfig(DatabaseConfig(), File("database-config.json")))
     initServer(8080)
 }
 
@@ -82,17 +85,35 @@ fun handleError(error: ErrorResponse, context: Context) {
     context.json(error)
 }
 
-fun loadDatabase() {
+fun loadDatabase(config: DatabaseConfig) {
     // for now
-    Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", driver = "org.h2.Driver")
+    config.databaseType.createConnection(config.connectionData)
 
     // create our tables
     transaction {
         create(Users)
         create(Sessions)
+        create(UserPermissions)
     }
 }
 
-fun loadConfigs() {
-    //
+val configJson = GsonBuilder()
+        .setPrettyPrinting()
+        .create()
+
+fun <T : Any> loadConfig(defaultConfig: T, file: File): T {
+    fun saveConfig(config: T) {
+        Files.write(file.toPath(), Collections.singleton(configJson.toJson(config)))
+    }
+
+    if (!file.exists()) {
+        file.createNewFile()
+        saveConfig(defaultConfig)
+        return defaultConfig
+    }
+
+    val config = configJson.fromJson(FileReader(file), defaultConfig.javaClass)
+
+    saveConfig(config)
+    return config
 }

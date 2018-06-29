@@ -2,6 +2,8 @@ package io.remonic.server
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import io.remonic.server.config.DatabaseConfig
+import io.remonic.server.config.DatabaseType
 import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.client.util.StringContentProvider
 import org.eclipse.jetty.http.HttpMethod
@@ -15,7 +17,13 @@ var testPort = 0
 
 class TestInit {
     @org.junit.jupiter.api.Test fun testServer() {
-        loadDatabase()
+        loadDatabase(DatabaseConfig(
+                databaseType = DatabaseType.H2,
+                connectionData = mapOf(
+                        Pair("path", "test"),
+                        Pair("options", "DB_CLOSE_DELAY=-1")
+                )
+        ))
         testPort = initServer(0).port()
         System.out.println("Successfully initialized for tests")
 
