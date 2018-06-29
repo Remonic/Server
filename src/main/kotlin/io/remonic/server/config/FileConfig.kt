@@ -4,6 +4,12 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import java.sql.Connection
 
+data class FileConfig(
+        val port: Int = 8080,
+        val database: DatabaseConfig = DatabaseConfig(),
+        val overriddenNodeSettings: Map<String, String> = hashMapOf()
+)
+
 data class DatabaseConfig(
         val databaseType: DatabaseType = DatabaseType.SQLITE,
         val connectionData: Map<String, String> = mapOf(

@@ -14,6 +14,8 @@ import io.javalin.Context
 import io.javalin.translator.json.JsonToObjectMapper
 import io.javalin.translator.json.ObjectToJsonMapper
 import io.remonic.server.config.DatabaseConfig
+import io.remonic.server.config.FileConfig
+import io.remonic.server.config.Settings
 import io.remonic.server.database.Sessions
 import io.remonic.server.database.UserPermissions
 import io.remonic.server.database.Users
@@ -28,9 +30,14 @@ import java.lang.reflect.Modifier
 import java.nio.file.Files
 import java.util.*
 
+val configJson = GsonBuilder()
+        .setPrettyPrinting()
+        .create()
+var config = loadConfig(FileConfig(), File("config.json"))
+
 fun main(args: Array<String>) {
-    loadDatabase(loadConfig(DatabaseConfig(), File("database-config.json")))
-    initServer(8080)
+    loadDatabase(config.database)
+    initServer(config.port)
 }
 
 fun initServer(port: Int): Javalin {
@@ -94,12 +101,9 @@ fun loadDatabase(config: DatabaseConfig) {
         create(Users)
         create(Sessions)
         create(UserPermissions)
+        create(Settings)
     }
 }
-
-val configJson = GsonBuilder()
-        .setPrettyPrinting()
-        .create()
 
 fun <T : Any> loadConfig(defaultConfig: T, file: File): T {
     fun saveConfig(config: T) {

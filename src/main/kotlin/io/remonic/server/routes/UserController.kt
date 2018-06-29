@@ -1,6 +1,7 @@
 package io.remonic.server.routes
 
 import io.javalin.Context
+import io.remonic.server.config.RemonicSettings
 import io.remonic.server.database.Session
 import io.remonic.server.database.User
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -12,6 +13,10 @@ class UserController {
         val request = context.bodyAsClass(UserRegisterRequest::class.java)
 
         transaction {
+            if (!RemonicSettings.REGISTRATION_PERMITTED.asBoolean()) {
+                deliver(RegistrationNotPermitted())
+            }
+
             if (User.findByEmail(request.email) != null) {
                 deliver(UserExistsError())
             }
@@ -57,8 +62,9 @@ data class UserRegisterRequest(val name: String, val email: String, val password
 class UserRegisterSuccess(val sessionKey: String): SuccessfulResponse()
 class UserExistsError: ErrorResponse(400, 1, "A user by that email already exists")
 class PasswordTooShortError: ErrorResponse(400, 2, "Password provided is lower than 8 characters")
+class RegistrationNotPermitted: ErrorResponse(400, 3, "Registration is not permitted")
 
 data class UserLoginRequest(val email: String, val password: String)
 class UserLoginSuccess(val sessionKey: String): SuccessfulResponse()
-class NoUserError: ErrorResponse(400, 3, "No user by that email exists")
-class IncorrectPasswordError: ErrorResponse(400, 4, "Incorrect password")
+class NoUserError: ErrorResponse(400, 1, "No user by that email exists")
+class IncorrectPasswordError: ErrorResponse(400, 2, "Incorrect password")

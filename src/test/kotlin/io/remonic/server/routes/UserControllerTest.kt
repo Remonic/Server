@@ -1,5 +1,6 @@
 package io.remonic.server.routes
 
+import io.remonic.server.config.RemonicSettings
 import io.remonic.server.database.User
 import io.remonic.server.test
 import org.eclipse.jetty.http.HttpMethod
@@ -19,10 +20,14 @@ class UserControllerTest {
                 assertEquals(it.errorCode, 2)
             }
 
+            RemonicSettings.REGISTRATION_PERMITTED.setValue(true)
             case("{'name': 'XXX', 'email': 'xxx@remonic.io', 'password': '$dummyPassword'}", UserRegisterSuccess::class) {
                 assertEquals(it.success, true)
                 assertNotNull(it.sessionKey)
             }
+
+            RemonicSettings.REGISTRATION_PERMITTED.setValue(false)
+            case("{'name': 'XXX', 'email': 'xxx@remonic.io', 'password': '$dummyPassword'}", RegistrationNotPermitted::class)
 
             case("{'name': 'XXX', 'email': 'xxx@remonic.io', 'password': '$dummyPassword'}", UserExistsError::class) {
                 assertEquals(it.errorCode, 1)
