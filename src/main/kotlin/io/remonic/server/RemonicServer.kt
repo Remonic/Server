@@ -32,7 +32,7 @@ import java.util.*
 
 val configJson = GsonBuilder()
         .setPrettyPrinting()
-        .create()
+        .create()!!
 var config = loadConfig(FileConfig(), File("config.json"))
 
 fun main(args: Array<String>) {
