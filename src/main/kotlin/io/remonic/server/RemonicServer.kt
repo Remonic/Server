@@ -41,7 +41,11 @@ fun main(args: Array<String>) {
 }
 
 fun initServer(port: Int): Javalin {
-    val app = Javalin.start(port)
+    val app = Javalin.create()
+            .port(port)
+            .enableCorsForAllOrigins()
+            .enableStandardRequestLogging()
+            .start()
     val userController = UserController()
 
     val moshi = Moshi.Builder()

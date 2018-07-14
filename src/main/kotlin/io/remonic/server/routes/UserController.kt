@@ -17,12 +17,20 @@ class UserController {
                 deliver(RegistrationNotPermitted())
             }
 
+            if (!request.email.contains('@')) {
+                deliver(InvalidEmailError())
+            }
+
             if (User.findByEmail(request.email) != null) {
                 deliver(UserExistsError())
             }
 
             if (request.password.length < 8) {
                 deliver(PasswordTooShortError())
+            }
+
+            if (request.name.isBlank()) {
+                deliver(InvalidNameError())
             }
 
             val createdUser = User.new {
@@ -62,7 +70,9 @@ data class UserRegisterRequest(val name: String, val email: String, val password
 class UserRegisterSuccess(val sessionKey: String): SuccessfulResponse()
 class UserExistsError: ErrorResponse(400, 1, "A user by that email already exists")
 class PasswordTooShortError: ErrorResponse(400, 2, "Password provided is lower than 8 characters")
-class RegistrationNotPermitted: ErrorResponse(400, 3, "Registration is not permitted")
+class InvalidEmailError: ErrorResponse(400, 3, "Email provided is invalid!")
+class InvalidNameError: ErrorResponse(400, 4, "Must contain non-whitespace characters")
+class RegistrationNotPermitted: ErrorResponse(400, 5, "Registration is not permitted")
 
 data class UserLoginRequest(val email: String, val password: String)
 class UserLoginSuccess(val sessionKey: String): SuccessfulResponse()

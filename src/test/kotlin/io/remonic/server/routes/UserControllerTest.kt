@@ -16,17 +16,17 @@ class UserControllerTest {
         test(HttpMethod.POST, "user/register") {
             case("{}", InvalidRequestError::class)
             case("{'name': 'XXX'}", InvalidRequestError::class)
+
+            RemonicSettings.REGISTRATION_PERMITTED.setValue(true)
             case("{'name': 'XXX', 'email': 'xxx@remonic.io', 'password': 'xxx'}", PasswordTooShortError::class) {
                 assertEquals(it.errorCode, 2)
             }
-
-            RemonicSettings.REGISTRATION_PERMITTED.setValue(true)
             case("{'name': 'XXX', 'email': 'xxx@remonic.io', 'password': '$dummyPassword'}", UserRegisterSuccess::class) {
                 assertEquals(it.success, true)
                 assertNotNull(it.sessionKey)
             }
-
             RemonicSettings.REGISTRATION_PERMITTED.setValue(false)
+
             case("{'name': 'XXX', 'email': 'xxx@remonic.io', 'password': '$dummyPassword'}", RegistrationNotPermitted::class)
 
             case("{'name': 'XXX', 'email': 'xxx@remonic.io', 'password': '$dummyPassword'}", UserExistsError::class) {
