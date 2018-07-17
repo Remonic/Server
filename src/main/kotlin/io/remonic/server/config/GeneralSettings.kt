@@ -15,7 +15,7 @@ val settingsGson = GsonBuilder()
         .create()!!
 
 enum class RemonicSettings(val defaultValue: Any) {
-    REGISTRATION_PERMITTED(false),
+    REGISTRATION_PERMITTED(true),
     EMAIL(EmailConfig());
 
     val setting: Setting?

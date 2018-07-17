@@ -13,7 +13,7 @@ class UserControllerTest {
     private val dummyPassword = "xxxxxxxxxxx"
     
     @Test fun testRegister() {
-        test(HttpMethod.POST, "user/register") {
+        test(HttpMethod.POST, "api/user/register") {
             case("{}", InvalidRequestError::class)
             case("{'name': 'XXX'}", InvalidRequestError::class)
 
@@ -44,7 +44,7 @@ class UserControllerTest {
             }
         }
 
-        test(HttpMethod.POST, "user/login") {
+        test(HttpMethod.POST, "api/user/login") {
             case("{}", InvalidRequestError::class)
             
             case("{'email': 'sadsa@remonic.io', 'password': 'xxxxxxxxx'}", NoUserError::class)

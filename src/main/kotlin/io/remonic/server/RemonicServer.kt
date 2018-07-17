@@ -6,7 +6,6 @@ import com.squareup.moshi.JsonEncodingException
 import io.javalin.ApiBuilder.path
 import io.javalin.ApiBuilder.post
 import io.javalin.Javalin
-import io.remonic.server.routes.UserController
 import io.javalin.translator.json.JavalinJsonPlugin
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -19,9 +18,7 @@ import io.remonic.server.config.Settings
 import io.remonic.server.database.Sessions
 import io.remonic.server.database.UserPermissions
 import io.remonic.server.database.Users
-import io.remonic.server.routes.ErrorException
-import io.remonic.server.routes.ErrorResponse
-import io.remonic.server.routes.InvalidRequestError
+import io.remonic.server.routes.*
 import org.jetbrains.exposed.sql.SchemaUtils.create
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
@@ -33,7 +30,8 @@ import java.util.*
 val configJson = GsonBuilder()
         .setPrettyPrinting()
         .create()!!
-var config = loadConfig(FileConfig(), File("config.json"))
+var configFile = File("config.json")
+var config = loadConfig(FileConfig(), configFile)
 
 fun main(args: Array<String>) {
     loadDatabase(config.database)
@@ -46,6 +44,7 @@ fun initServer(port: Int): Javalin {
             .enableCorsForAllOrigins()
             .enableStandardRequestLogging()
             .start()
+    val setupController = SetupController()
     val userController = UserController()
 
     val moshi = Moshi.Builder()
@@ -82,9 +81,16 @@ fun initServer(port: Int): Javalin {
     }
 
     app.routes {
-        path("user") {
-            post("register", userController::register)
-            post("login", userController::login)
+        path("api") {
+            post("setup", setupController::post)
+
+            // todo figure out how to handle the rest of the end points when
+            // server is not setup yet
+
+            path("user") {
+                post("register", userController::register)
+                post("login", userController::login)
+            }
         }
     }
 
@@ -110,18 +116,18 @@ fun loadDatabase(config: DatabaseConfig) {
 }
 
 fun <T : Any> loadConfig(defaultConfig: T, file: File): T {
-    fun saveConfig(config: T) {
-        Files.write(file.toPath(), Collections.singleton(configJson.toJson(config)))
-    }
-
     if (!file.exists()) {
         file.createNewFile()
-        saveConfig(defaultConfig)
+        saveConfig(defaultConfig, file)
         return defaultConfig
     }
 
     val config = configJson.fromJson(FileReader(file), defaultConfig.javaClass)
 
-    saveConfig(config)
+    saveConfig(config, file)
     return config
+}
+
+fun <T : Any> saveConfig(config: T, file: File) {
+    Files.write(file.toPath(), Collections.singleton(configJson.toJson(config)))
 }

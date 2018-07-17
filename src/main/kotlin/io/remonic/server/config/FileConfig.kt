@@ -7,7 +7,8 @@ import java.sql.Connection
 data class FileConfig(
         val port: Int = 8080,
         val database: DatabaseConfig = DatabaseConfig(),
-        val overriddenNodeSettings: Map<String, String> = hashMapOf()
+        val overriddenNodeSettings: Map<String, String> = hashMapOf(),
+        val setupComplete: Boolean = false
 )
 
 data class DatabaseConfig(

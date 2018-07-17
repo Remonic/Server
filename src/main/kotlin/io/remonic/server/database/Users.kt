@@ -10,6 +10,8 @@ object Users: IntIdTable() {
     val email = varchar("email", 50).uniqueIndex()
     val name = varchar("name", 32)
     val password = varchar("password", 60)
+    // this means they have ALL permissions -- this is not a group
+    val admin = bool("admin").default(false)
 }
 
 class User(id: EntityID<Int>): IntEntity(id) {
@@ -26,12 +28,13 @@ class User(id: EntityID<Int>): IntEntity(id) {
     var email by Users.email
     var name by Users.name
     var password by Users.password
+    var admin by Users.admin
 
     val sessions by Session referrersOn Sessions.user
     val permissions by UserPermission referrersOn UserPermissions.user
 
     fun hasPermission(permission: String): Boolean {
-        return permissions.any {
+        return admin || permissions.any {
             it.permission.equals(permission, true)
         }
     }
